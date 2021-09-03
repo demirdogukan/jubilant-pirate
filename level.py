@@ -7,15 +7,21 @@ from settings import HEIGHT, TILE_SIZE, WIDTH
 from player import Player
 from ui import HealthBar, TextLabel, FadingLayout
 from interactiveObjects import SilverCoin, GoldenCoin
+from overworld import levels
+
 
 class Level:
-    def __init__(self, level_data, surface, clock=None, color=None):
+    def __init__(self, level_data, surface, current_level, create_overworld):
         # level setup
         self.display_surface = surface
         self.world_shift = -5
         self.current_x = 0
         self.point = 0
-        self.display_color = color
+
+        self.current_level = current_level
+        self.create_overworld = create_overworld
+        self.level_data = levels[self.current_level]
+        self.new_max_level = level_data["unlock"]
 
         # player and player's goal layout
         player_layout = support.import_csv_file(level_data["player"])
@@ -67,7 +73,6 @@ class Level:
 
         # Fade Layout
         self.fade_layout = FadingLayout()
-
 
     def player_setup(self, layout):
         for row_index, row in enumerate(layout):
@@ -254,6 +259,13 @@ class Level:
                 self.take_damage(player, 100)
                 break
 
+    def input(self):
+        key = pygame.key.get_pressed()
+        if key[pygame.K_RETURN]:
+            self.create_overworld(self.current_level, self.new_max_level)
+        elif key[pygame.K_ESCAPE]:
+            self.create_overworld(self.current_level, 0)
+
     def run(self):
 
         # level tiles
@@ -323,3 +335,5 @@ class Level:
                                      (HEIGHT-self.game_over_lbl.get_height())/2))
 
         self.fade_layout.update(self.world_shift)
+
+        self.input()
