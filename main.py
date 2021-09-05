@@ -2,16 +2,15 @@ import pygame
 import settings
 from level import Level
 from overworld import OverWorld
-from settings import level_0
 
 class Game:
     def __init__(self):
-        self.max_level = 2
+        self.max_level = 3
         self.overworld = OverWorld(0, self.max_level, screen, self.create_level)
         self.status = "overworld"
 
     def create_level(self, current_level):
-        self.level = Level(level_0, screen, current_level, self.create_overworld)
+        self.level = Level(screen, current_level, self.create_overworld)
         self.status = "level"
 
     def create_overworld(self, current_level, new_max_level):

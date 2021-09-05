@@ -81,6 +81,9 @@ class FadingLayout(pygame.sprite.Sprite):
         self.alpha = min(255, self.alpha + self.fading_amount)
         self.fadingSurface.set_alpha(self.alpha)
 
+        return self.alpha == 255
+
+
     def get_color(self):
         return self.color
 

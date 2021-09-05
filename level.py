@@ -1,3 +1,4 @@
+from os import truncate
 import pygame
 import support
 from decoration import Cloud, Sky, Water
@@ -11,7 +12,7 @@ from overworld import levels
 
 
 class Level:
-    def __init__(self, level_data, surface, current_level, create_overworld):
+    def __init__(self, surface, current_level, create_overworld):
         # level setup
         self.display_surface = surface
         self.world_shift = -5
@@ -21,38 +22,42 @@ class Level:
         self.current_level = current_level
         self.create_overworld = create_overworld
         self.level_data = levels[self.current_level]
-        self.new_max_level = level_data["unlock"]
+        self.new_max_level = self.level_data["unlock"]
 
         # player and player's goal layout
-        player_layout = support.import_csv_file(level_data["player"])
+        player_layout = support.import_csv_file(self.level_data["player"])
         self.player = pygame.sprite.GroupSingle()
+        self.is_goal_achieved = False
         self.goal = pygame.sprite.Group()
         self.player_setup(player_layout)
         self.collision_counter = 0
 
-        # Import terrain layouts
-        terrain_layout = support.import_csv_file(level_data["terrain"])
+        self.import_layouts()
+
+    def import_layouts(self):
+            # Import terrain layouts
+        terrain_layout = support.import_csv_file(self.level_data["terrain"])
         self.terrain_sprites = self.create_tile_group(terrain_layout, "terrain")
 
-        crate_layout = support.import_csv_file(level_data["crates"])
+        crate_layout = support.import_csv_file(self.level_data["crates"])
         self.crate_sprites = self.create_tile_group(crate_layout, "crates")
 
-        coin_layout = support.import_csv_file(level_data["coins"])
+        coin_layout = support.import_csv_file(self.level_data["coins"])
         self.coin_sprites = self.create_tile_group(coin_layout, "coins")
 
-        fg_palms_layout = support.import_csv_file(level_data["fg_palms"])
+        fg_palms_layout = support.import_csv_file(self.level_data["fg_palms"])
         self.fg_palms_sprite = self.create_tile_group(fg_palms_layout, "fg_palms")
 
-        bg_palms_layout = support.import_csv_file(level_data["bg_palms"])
+        bg_palms_layout = support.import_csv_file(self.level_data["bg_palms"])
         self.bg_palm_sprites = self.create_tile_group(bg_palms_layout, "bg_palms")
 
-        enemy_layout = support.import_csv_file(level_data["enemies"])
+        enemy_layout = support.import_csv_file(self.level_data["enemies"])
         self.enemies_sprite = self.create_tile_group(enemy_layout, "enemies")
 
-        grass_layout = support.import_csv_file(level_data["grass"])
+        grass_layout = support.import_csv_file(self.level_data["grass"])
         self.grass_sprite = self.create_tile_group(grass_layout, "grass")
 
-        constraints_layout = support.import_csv_file(level_data["constraints"])
+        constraints_layout = support.import_csv_file(self.level_data["constraints"])
         self.constraints_sprite = self.create_tile_group(constraints_layout, "constraints")
 
         self.sky = Sky(8)
@@ -83,7 +88,6 @@ class Level:
                     sprite = Player((x, y), self.display_surface)
                     self.player.add(sprite)
                 elif col == "1":
-                    print(row_index, col_index)
                     hat_surface = pygame.image.load("graphics/character/hat.png").convert_alpha()
                     sprite = StaticTile((x, y), TILE_SIZE, hat_surface)
                     self.goal.add(sprite)
@@ -273,6 +277,29 @@ class Level:
         elif key[pygame.K_ESCAPE]:
             self.create_overworld(self.current_level, 0)
 
+    def goal_collision(self):
+        player_sprite = self.player.sprite
+        goal_sprite = self.goal.sprites()
+        for sprite in goal_sprite:
+            if sprite.rect.colliderect(player_sprite.rect) and not self.is_goal_achieved:
+                self.get_to_next_level()
+
+    def get_to_next_level(self):
+        self.is_goal_achieved = True
+        self.current_level += 1
+        self.create_overworld(self.current_level, self.current_level + 1)
+
+    def end_the_game(self):
+            is_fading_done = self.fade_layout.start_fading()
+            self.fade_layout.draw(self.display_surface)
+            self.game_over_lbl.draw("GAME OVER",
+                                     self.display_surface,
+                                     ((WIDTH-self.game_over_lbl.get_width())/2,
+                                     (HEIGHT-self.game_over_lbl.get_height())/2))
+
+            if is_fading_done:
+                self.create_overworld(self.current_level, self.current_level)
+
     def run(self):
 
         # level tiles
@@ -332,12 +359,9 @@ class Level:
 
         # Game Over
         if self.is_game_over():
-            self.fade_layout.start_fading()
-            self.fade_layout.draw(self.display_surface)
-            self.game_over_lbl.draw("GAME OVER",
-                                     self.display_surface,
-                                     ((WIDTH-self.game_over_lbl.get_width())/2,
-                                     (HEIGHT-self.game_over_lbl.get_height())/2))
+            self.end_the_game()
 
         self.fade_layout.update(self.world_shift)
         self.input()
+
+        self.goal_collision()
