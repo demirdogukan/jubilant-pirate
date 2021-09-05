@@ -26,7 +26,7 @@ class Level:
         # player and player's goal layout
         player_layout = support.import_csv_file(level_data["player"])
         self.player = pygame.sprite.GroupSingle()
-        self.goal = pygame.sprite.GroupSingle()
+        self.goal = pygame.sprite.Group()
         self.player_setup(player_layout)
         self.collision_counter = 0
 
@@ -77,13 +77,13 @@ class Level:
     def player_setup(self, layout):
         for row_index, row in enumerate(layout):
             for col_index, col in enumerate(row):
-                x = row_index * TILE_SIZE
-                y = col_index * TILE_SIZE
+                x = col_index * TILE_SIZE
+                y = row_index * TILE_SIZE
                 if col == "0":
                     sprite = Player((x, y), self.display_surface)
                     self.player.add(sprite)
-
                 elif col == "1":
+                    print(row_index, col_index)
                     hat_surface = pygame.image.load("graphics/character/hat.png").convert_alpha()
                     sprite = StaticTile((x, y), TILE_SIZE, hat_surface)
                     self.goal.add(sprite)
@@ -151,16 +151,24 @@ class Level:
                 enemy.reverse()
 
     def scroll_x(self):
+        # ---------------------------------------------------------
+        # Name: scroll_x
+        # Description: it makes the screen move to opposite direction of the player
+        # when player moves to the right, the all objects in the screen moves to left
+        # so that player moves to right in a way
+        # ---------------------------------------------------------
         player = self.player.sprite
         player_x = player.rect.centerx
         direction_x = player.direction.x
-
+        # when player moves to left all objects in the scene moves to right
         if player_x < WIDTH / 4 and direction_x < 0:
             self.world_shift = 8
             player.speed = 0
+        # whereas player moves to right, objects in the scene moves to left
         elif player_x > WIDTH - (WIDTH / 4) and direction_x > 0:
             self.world_shift = -8
             player.speed = 0
+        # if the player doesn't cross the boundary, the objects can stay in same position
         else:
             self.world_shift = 0
             player.speed = 8
@@ -226,7 +234,6 @@ class Level:
     def take_damage(self, player, damage_amount):
         if self.is_game_over() is False:
             player.health = max(player.health-damage_amount, 0)
-            print(player.health)
             self.hp_bar.fade(damage_amount)
 
     def is_game_over(self):
@@ -281,8 +288,8 @@ class Level:
 
         self.coin_sprites.update(self.world_shift)
         self.coin_sprites.draw(self.display_surface)
-        self.crate_sprites.draw(self.display_surface)
 
+        self.crate_sprites.draw(self.display_surface)
         self.crate_sprites.update(self.world_shift)
 
         self.bg_palm_sprites.update(self.world_shift)
@@ -299,9 +306,11 @@ class Level:
         self.water.draw(self.display_surface, self.world_shift)
         self.water_collision()
 
+        # Player Goal
+        self.goal.draw(self.display_surface)
+        self.goal.update(self.world_shift)
         # UI
         self.hp_bar.draw(self.display_surface)
-
         point_txt = self.coin_collision()
         self.score_lbl.draw(point_txt,
                            self.display_surface,
@@ -312,10 +321,6 @@ class Level:
             self.enemy_collision()
             self.collision_counter = 0
         self.collision_counter += 0.20
-
-        # Player Goal
-        self.goal.update(self.world_shift)
-        self.goal.draw(self.display_surface)
 
         # player
         self.player.update()
@@ -335,5 +340,4 @@ class Level:
                                      (HEIGHT-self.game_over_lbl.get_height())/2))
 
         self.fade_layout.update(self.world_shift)
-
         self.input()

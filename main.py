@@ -27,7 +27,7 @@ class Game:
             self.level.run()
 
 pygame.init()
-color = pygame.Color(0, 0, 0)
+color = pygame.Color(128, 128, 128)
 screen = pygame.display.set_mode((settings.WIDTH, settings.HEIGHT))
 clock = pygame.time.Clock()
 game = Game()
