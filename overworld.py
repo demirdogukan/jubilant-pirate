@@ -65,11 +65,11 @@ class OverWorld:
 
         self.sky = Sky(8, "overworld")
 
-    # ---------------------------------------------------------
-    # Name: setup_nodes
-    # Description: Initialzie the overworld
-    # ---------------------------------------------------------
     def __setup_nodes(self):
+        # ---------------------------------------------------------
+        # Name: setup_nodes
+        # Description: Initialzie the overworld
+        # ---------------------------------------------------------
         self.nodes = pygame.sprite.Group()
         for index, node_data in enumerate(levels.values()):
             if index <= self.max_level:
@@ -83,11 +83,11 @@ class OverWorld:
         sprite = PlayerIcon(self.nodes.sprites()[self.current_level].rect.center)
         self.icon.add(sprite)
 
-    # ---------------------------------------------------------
-    # Name:draw_path
-    # Description: draws a line between nodes
-    # ---------------------------------------------------------
     def __draw_path(self):
+        # ---------------------------------------------------------
+        # Name:draw_path
+        # Description: draws a line between nodes
+        # ---------------------------------------------------------
         lines = [lvl['node_pos'] for key, lvl in levels.items() if key <= self.max_level]
         pygame.draw.lines(self.display_surface, (220, 73, 73), False, lines, 6)
 

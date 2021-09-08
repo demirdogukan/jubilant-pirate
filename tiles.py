@@ -1,4 +1,3 @@
-from sys import path
 from support import import_folder
 import pygame
 

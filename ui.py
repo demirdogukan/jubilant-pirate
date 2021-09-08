@@ -1,5 +1,4 @@
 import pygame
-from pygame.version import PygameVersion
 from settings import TILE_SIZE, WIDTH, HEIGHT
 
 
@@ -73,11 +72,11 @@ class FadingLayout(pygame.sprite.Sprite):
     def draw(self, screen):
         screen.blit(self.fadingSurface, (0, 0))
 
-    # ---------------------------------------------------------
-    # Name: fade_screen
-    # Description: right after the player has died, the screen will process fading
-    # ---------------------------------------------------------
     def start_fading(self):
+        # ---------------------------------------------------------
+        # Name: fade_screen
+        # Description: right after the player has died, the screen will process fading
+        # ---------------------------------------------------------
         self.alpha = min(255, self.alpha + self.fading_amount)
         self.fadingSurface.set_alpha(self.alpha)
 

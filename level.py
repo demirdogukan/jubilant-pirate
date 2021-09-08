@@ -1,4 +1,4 @@
-from os import truncate
+from particles import ExplosionParticle
 import pygame
 import support
 from decoration import Cloud, Sky, Water
@@ -78,6 +78,9 @@ class Level:
 
         # Fade Layout
         self.fade_layout = FadingLayout()
+
+        # Particles
+        self.explosion_sprite = pygame.sprite.Group()
 
     def player_setup(self, layout):
         for row_index, row in enumerate(layout):
@@ -229,11 +232,21 @@ class Level:
 
     def enemy_collision(self):
         player = self.player.sprite
-        enemy_sprite = self.enemies_sprite.sprites()
-        for sprite in enemy_sprite:
-            if sprite.rect.colliderect(player.rect):
-                self.take_damage(player, sprite.enemy_damage)
-                break
+        # Get enemy sprites colliding with player's
+        enemy_sprites = pygame.sprite.spritecollide(player, self.enemies_sprite, False)
+
+        for enemy in enemy_sprites:
+            player_bottom = player.rect.bottom
+            enemy_mid = enemy.rect.centery
+            enemy_top  = enemy.rect.top
+            if enemy_top < player_bottom < enemy_mid and player.direction.y >= 0:
+                # draw explosion
+                particle = ExplosionParticle(enemy.rect.center)
+                self.explosion_sprite.add(particle)
+                player.direction.y = -15
+                enemy.kill()
+            else:
+                self.take_damage(player, enemy.enemy_damage)
 
     def take_damage(self, player, damage_amount):
         if self.is_game_over() is False:
@@ -301,7 +314,6 @@ class Level:
                 self.create_overworld(self.current_level, self.current_level)
 
     def run(self):
-
         # level tiles
         self.sky.draw(self.display_surface)
 
@@ -365,3 +377,6 @@ class Level:
         self.input()
 
         self.goal_collision()
+
+        self.explosion_sprite.draw(self.display_surface)
+        self.explosion_sprite.update(self.world_shift)
