@@ -232,6 +232,7 @@ class Level:
 
     def enemy_collision(self):
         player = self.player.sprite
+        self.invisible_end = 0
         # Get enemy sprites colliding with player's
         enemy_sprites = pygame.sprite.spritecollide(player, self.enemies_sprite, False)
 
@@ -239,6 +240,7 @@ class Level:
             player_bottom = player.rect.bottom
             enemy_mid = enemy.rect.centery
             enemy_top  = enemy.rect.top
+            # kill the enemy
             if enemy_top < player_bottom < enemy_mid and player.direction.y >= 0:
                 # draw explosion
                 particle = ExplosionParticle(enemy.rect.center)
@@ -246,12 +248,8 @@ class Level:
                 player.direction.y = -15
                 enemy.kill()
             else:
-                self.take_damage(player, enemy.enemy_damage)
-
-    def take_damage(self, player, damage_amount):
-        if self.is_game_over() is False:
-            player.health = max(player.health-damage_amount, 0)
-            self.hp_bar.fade(damage_amount)
+                player.take_damage(enemy.enemy_damage)
+                self.hp_bar.fade(player.health)
 
     def is_game_over(self):
         player = self.player.sprite
@@ -280,7 +278,7 @@ class Level:
         water_sprite = self.water.water_sprites.sprites()
         for sprite in water_sprite:
             if sprite.rect.colliderect(player.rect):
-                self.take_damage(player, 100)
+                player.take_damage(100)
                 break
 
     def input(self):

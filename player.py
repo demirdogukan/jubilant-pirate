@@ -1,4 +1,5 @@
 import pygame
+import math
 from support import import_folder
 
 
@@ -11,6 +12,7 @@ class Player(pygame.sprite.Sprite):
         self.image = self.animations['idle'][self.frame_index]
         self.rect = self.image.get_rect(topleft=pos)
 
+        # Hearlh
         self.health = 100
 
         # player movement
@@ -27,10 +29,15 @@ class Player(pygame.sprite.Sprite):
         self.on_left = False
         self.on_right = False
 
+        self.invisible_amount = 400
+        self.is_invisible = False
+        self.start_invisible_time = 0
+
     def update(self):
         self.get_input()
         self.get_status()
         self.animate()
+        self.__invisible_timer()
 
     def import_character_assets(self):
         path = "graphics/character/"
@@ -41,7 +48,6 @@ class Player(pygame.sprite.Sprite):
 
     def animate(self):
         animation = self.animations[self.status]
-
         # loop over frame index
         self.frame_index += self.animation_speed
         if self.frame_index >= len(animation):
@@ -52,6 +58,13 @@ class Player(pygame.sprite.Sprite):
             self.image = image
         else:
             self.image = pygame.transform.flip(image, True, False)
+
+        # make player invisible when taking damage
+        if self.is_invisible:
+            value = self.__wave_value()
+            self.image.set_alpha(value)
+        else:
+            self.image.set_alpha(255)
 
         # Set player's collider
         if self.on_ground and self.on_right:
@@ -100,3 +113,18 @@ class Player(pygame.sprite.Sprite):
     def apply_gravity(self):
         self.direction.y += self.gravity
         self.rect.y += self.direction.y
+
+    def __wave_value(self):
+        return 255 if math.sin(pygame.time.get_ticks()) >= 0 else 0
+
+    def take_damage(self, damage_amount):
+        if not self.is_invisible:
+            self.health = max(self.health-damage_amount, 0)
+            self.is_invisible = True
+            self.start_invisible_time = pygame.time.get_ticks()
+
+    def __invisible_timer(self):
+        if self.is_invisible:
+            end_invisible_time = pygame.time.get_ticks()
+            if end_invisible_time - self.start_invisible_time > self.invisible_amount:
+                self.is_invisible = False

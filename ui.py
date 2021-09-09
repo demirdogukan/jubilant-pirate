@@ -29,17 +29,15 @@ class HealthBar(pygame.sprite.Sprite):
 
         surface.blit(self.image, (self.start_x + self.size / 2, 38))
 
-    def fade(self, damage):
-        fade_amount = self.__normalize_number(damage, self.prev_max_size)
-        self.max_size_x -= fade_amount
-        max_value = max(self.max_size_x, 0.1)
-        self.image = pygame.Surface((max_value, self. max_size_y))
+    def fade(self, health):
+        new_size = self.__normalized_pixel(health)
+        new_size = max(new_size, 0.1)
+        self.image = pygame.Surface((new_size, self. max_size_y))
         self.image.fill((220, 73, 73))
         self.rect = self.image.get_rect(center=self.pos)
 
-    def __normalize_number(self, number, norm):
-        return number * (norm / 100)
-
+    def __normalized_pixel(self, health):
+        return self.max_size_x * health / 100
 
 class TextLabel:
     def __init__(self, font_size):
