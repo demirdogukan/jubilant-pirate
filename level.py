@@ -1,6 +1,6 @@
-from particles import ExplosionParticle
 import pygame
 import support
+from particles import ExplosionParticle
 from decoration import Cloud, Sky, Water
 from tiles import StaticTile, Crate, Coin, Palm, Grass, Tile
 from enemy import Enemy
@@ -24,18 +24,19 @@ class Level:
         self.level_data = levels[self.current_level]
         self.new_max_level = self.level_data["unlock"]
 
-        # player and player's goal layout
+        # player and player's goal layout setup
         player_layout = support.import_csv_file(self.level_data["player"])
         self.player = pygame.sprite.GroupSingle()
         self.is_goal_achieved = False
         self.goal = pygame.sprite.Group()
-        self.player_setup(player_layout)
         self.collision_counter = 0
 
+        self.player_setup(player_layout)
         self.import_layouts()
 
     def import_layouts(self):
-            # Import terrain layouts
+
+        # Import terrain layouts
         terrain_layout = support.import_csv_file(self.level_data["terrain"])
         self.terrain_sprites = self.create_tile_group(terrain_layout, "terrain")
 
@@ -249,7 +250,6 @@ class Level:
                 enemy.kill()
             else:
                 player.take_damage(enemy.enemy_damage)
-                self.hp_bar.fade(player.health)
 
     def is_game_over(self):
         player = self.player.sprite
@@ -279,7 +279,6 @@ class Level:
         for sprite in water_sprite:
             if sprite.rect.colliderect(player.rect):
                 player.take_damage(100)
-                break
 
     def input(self):
         key = pygame.key.get_pressed()
@@ -348,6 +347,7 @@ class Level:
         self.goal.update(self.world_shift)
         # UI
         self.hp_bar.draw(self.display_surface)
+        self.hp_bar.fade(self.player.sprite.health)
         point_txt = self.coin_collision()
         self.score_lbl.draw(point_txt,
                            self.display_surface,
@@ -378,3 +378,5 @@ class Level:
 
         self.explosion_sprite.draw(self.display_surface)
         self.explosion_sprite.update(self.world_shift)
+
+

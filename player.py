@@ -12,7 +12,7 @@ class Player(pygame.sprite.Sprite):
         self.image = self.animations['idle'][self.frame_index]
         self.rect = self.image.get_rect(topleft=pos)
 
-        # Hearlh
+        # Health
         self.health = 100
 
         # player movement
@@ -33,11 +33,16 @@ class Player(pygame.sprite.Sprite):
         self.is_invisible = False
         self.start_invisible_time = 0
 
+        # Surface
+        self.display_surface = surface
+
     def update(self):
         self.get_input()
         self.get_status()
         self.animate()
         self.__invisible_timer()
+
+        # pygame.draw.rect(self.display_surface, (255, 0, 0), self.rect)
 
     def import_character_assets(self):
         path = "graphics/character/"
